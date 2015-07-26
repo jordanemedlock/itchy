@@ -4,6 +4,7 @@ class Itchy(object):
     def __init__(self, window_width, window_height):
         self.window_width = window_width
         self.window_height = window_height
+        self.image = pygame.image.init('itchy.png')
     def get_image(self):
         return self.image
 

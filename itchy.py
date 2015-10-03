@@ -2,11 +2,6 @@ import pygame
 from math import *
 import time
 
-space = pygame.K_SPACE
-left = pygame.K_LEFT
-right = pygame.K_RIGHT
-
-
 def curry(func, arg):
     def curried(*args, **kwargs):
         return func(arg, *args, **kwargs)
@@ -48,17 +43,38 @@ class Itchy(object):
         self.direction = 90
         self.facing = 'right'
         self.queue = []
-        self.events = []
+        self.event = None
     def get_image(self):
+        img = self.image
+        if self.facing == 'left':
+            img = flip_center(img)
         self.direction = (self.direction + 90) % 360 - 90
-        if self.facing == 'left' and self.direction == -90:
-            return flip_center(self.image)
-        return rot_center(self.image, -(self.direction-90))
+        direction = -(self.direction-90) if self.facing == 'right' else -(self.direction + 90)
+        return rot_center(img, direction)
     def get_rect(self):
         return self.rect
-    def run(itchy, events):
-        self.events = events
+    def run(itchy, event):
+        itchy.event = event
+        click = None
+        right = None
+        left = None
+        space = None
         exec(open('run.py').read())
+        if pygame.MOUSEBUTTONDOWN == event.type and click is not None:
+            click(itchy)
+        if pygame.KEYDOWN == event.type:
+            if event.unicode == u' ' and space is not None:
+                space(itchy)
+            elif event.key == pygame.K_LEFT and left is not None:
+                left(itchy)
+            elif event.key == pygame.K_RIGHT and right is not None:
+                right(itchy)
+            elif event.key == pygame.K_UP and up is not None:
+                up(itchy)
+            elif event.key == pygame.K_DOWN and down is not None:
+                down(itchy)
+
+
 
 
     @queued
@@ -83,7 +99,7 @@ class Itchy(object):
         self.direction += degrees
     @queued
     def turnLeft(self,degrees):
-        self.direciton += degrees
+        self.direction += degrees
     @queued
     def pointInDirection(self,degrees):
         self.direction = degrees
@@ -102,16 +118,16 @@ class Itchy(object):
         pass
     @queued
     def changeXBy(self,dX):
-        self.rect.center[0] += dX
+        self.rect.center = (self.rect.center[0]-dX, self.rect.center[1])
     @queued
     def changeYBy(self,dY):
-        self.rect.center[1] += dY
+        self.rect.center = (self.rect.center[0], self.rect.center[1]-dY)
     @queued
     def setXTo(self,newX):
-        self.rect.center[0] = newX
+        self.rect.center = (dX, self.rect.center[1])
     @queued
     def setYTo(self,newY):
-        self.rect.center[1] = newY
+        self.rect.center = (self.rect.center[0], dY)
     @queued
     def ifOnEdgeBounce(self):
         pass
@@ -121,4 +137,3 @@ class Itchy(object):
             if hasattr(event, 'key') and event.key == key:
                 return True
         return False
-
